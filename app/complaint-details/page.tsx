@@ -1,7 +1,7 @@
 import Header from "@/components/complaint-details/Header";
 import ComplaintInfo from "@/components/complaint-details/ComplaintInfo";
 import LocationSection from "@/components/complaint-details/LocationSection";
-import StatusCard from "@/components/complaint-details/StatusCard";
+// import StatusCard from "@/components/complaint-details/StatusCard";
 import { Separator } from "@/components/ui/separator";
 
 export default function ComplaintDetailsPage() {
@@ -18,9 +18,9 @@ export default function ComplaintDetailsPage() {
 
         <Separator className="bg-gray-200" />
 
-        <LocationSection latitude="28.6139° N" longitude="77.2090° E" />
+        <LocationSection latitude="28.6139° N" longitude="77.2090° E" status="In Progress" />
 
-        <StatusCard status="In progress" />
+        {/* <StatusCard status="In progress" /> */}
       </main>
     </div>
   );

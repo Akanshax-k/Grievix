@@ -6,10 +6,14 @@ interface LocationSectionProps {
   longitude: string;
 }
 
+interface StatusCardProps {
+  status: string;
+} 
 export default function LocationSection({
   latitude,
   longitude,
-}: LocationSectionProps) {
+  status
+}: LocationSectionProps & StatusCardProps) {
   return (
     <section className="flex flex-col gap-4">
 
@@ -19,49 +23,61 @@ export default function LocationSection({
         <h2 className="text-lg font-bold text-gray-800">Incident Location</h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Bottom row: lat/lng + map + status — exact screenshot layout */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 
-        {/* Latitude card */}
-        <Card className="rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-4 flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-              Latitude
-            </span>
-            <span className="text-sm font-semibold text-gray-800">
-              {latitude}
-            </span>
-          </CardContent>
-        </Card>
+        {/* Left: Latitude + Longitude stacked */}
+        <div className="flex flex-col gap-3">
+          {/* Latitude */}
+          <Card className="rounded-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gray-50 min-w-[160px]">
+            <CardContent className="px-4 py-3 flex flex-col gap-0.5">
+              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                Latitude
+              </span>
+              <span className="text-sm font-semibold text-gray-800">
+                {latitude}
+              </span>
+            </CardContent>
+          </Card>
 
-        {/* Longitude card */}
-        <Card className="rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-4 flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-              Longitude
-            </span>
-            <span className="text-sm font-semibold text-gray-800">
-              {longitude}
-            </span>
-          </CardContent>
-        </Card>
+          {/* Longitude */}
+          <Card className="rounded-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gray-50 min-w-[160px]">
+            <CardContent className="px-4 py-3 flex flex-col gap-0.5">
+              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                Longitude
+              </span>
+              <span className="text-sm font-semibold text-gray-800">
+                {longitude}
+              </span>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Interactive map placeholder */}
-        <Card className="rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-          <CardContent className="p-4 flex flex-col items-center justify-center gap-2 min-h-[80px]">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-blue-500" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-700">
-                Interactive Map View
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Geo-coordinates pinned successfully
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Center: Interactive Map View */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-blue-500" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-gray-700">
+              Interactive Map View
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Geo-coordinates pinned successfully
+            </p>
+          </div>
+        </div>
 
+       <div className="flex justify-end">
+      <Card className="rounded-xl border   transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto sm:min-w-[200px]">
+        <CardContent className="p-5 flex flex-col items-end gap-1">
+          <span className="text-sm font-semibold text-gray-700">
+            Current Status :
+          </span>
+          <span className="text-base font-bold text-blue-600">{status}</span>
+        </CardContent>
+      </Card>
+ </div>
       </div>
     </section>
   );

@@ -1,76 +1,106 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
+"use client";
 
-interface LocationSectionProps {
-  latitude: string;
-  longitude: string;
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MapPin, Navigation, RefreshCw } from "lucide-react";
+
+interface Coordinates {
+  lat: number;
+  lng: number;
 }
 
-export default function LocationSection({
-  latitude,
-  longitude,
-}: LocationSectionProps) {
+interface LocationSectionProps {
+  coordinates: Coordinates | null;
+  onLocationChange: (coords: Coordinates | null) => void;
+}
+
+export default function LocationSection({ coordinates, onLocationChange }: LocationSectionProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation not supported.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        onLocationChange({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLoading(false);
+      },
+      (err) => {
+        setError("Unable to fetch location. Please allow access.");
+        setLoading(false);
+      },
+      { timeout: 10000 }
+    );
+  };
+
   return (
-    <section className="flex flex-col gap-4">
+    <Card className="rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col">
+      <CardHeader className="pb-1 pt-5 px-5">
+        <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-blue-600" />
+          Incident Location
+        </CardTitle>
+        <p className="text-xs text-slate-400 mt-0.5">Automatic GPS coordinate capture</p>
+      </CardHeader>
 
-      {/* Heading */}
-      <div className="flex items-center gap-2">
-        <MapPin className="w-5 h-5 text-blue-600" />
-        <h2 className="text-lg font-bold text-gray-800">Incident Location</h2>
-      </div>
+      <CardContent className="px-5 pb-5 flex flex-col flex-1 justify-between space-y-4">
+        {/* Spacer to push coords + button to bottom like screenshot */}
+        <div className="flex-1" />
 
-      {/* Bottom row: lat/lng + map + status — exact screenshot layout */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-
-        {/* Left: Latitude + Longitude stacked */}
-        <div className="flex flex-col gap-3">
-          {/* Latitude */}
-          <Card className="rounded-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gray-50 min-w-[160px]">
-            <CardContent className="px-4 py-3 flex flex-col gap-0.5">
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                Latitude
-              </span>
-              <span className="text-sm font-semibold text-gray-800">
-                {latitude}
-              </span>
-            </CardContent>
-          </Card>
-
-          {/* Longitude */}
-          <Card className="rounded-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gray-50 min-w-[160px]">
-            <CardContent className="px-4 py-3 flex flex-col gap-0.5">
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                Longitude
-              </span>
-              <span className="text-sm font-semibold text-gray-800">
-                {longitude}
-              </span>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Center: Interactive Map View */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-            <MapPin className="w-5 h-5 text-blue-500" />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-gray-700">
-              Interactive Map View
+        {/* Coordinates row */}
+        <div className="flex justify-between items-end px-1">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+              Latitude
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Geo-coordinates pinned successfully
+            <p className="text-lg font-bold text-slate-800 tabular-nums">
+              {coordinates ? coordinates.lat.toFixed(4) : "—"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+              Longitude
+            </p>
+            <p className="text-lg font-bold text-slate-800 tabular-nums">
+              {coordinates ? coordinates.lng.toFixed(4) : "—"}
             </p>
           </div>
         </div>
 
-        {/* Right: Current Status */}
-        <div className="flex flex-col items-end gap-1 ml-auto">
-          <span className="text-sm font-bold text-gray-800">Current Status :</span>
-          <span className="text-base font-bold text-blue-600">In progress</span>
-        </div>
+        {/* Error */}
+        {error && (
+          <p className="text-xs text-red-500">{error}</p>
+        )}
 
-      </div>
-    </section>
+        {/* Refresh Location button — matches screenshot style */}
+        <Button
+          type="button"
+          onClick={fetchLocation}
+          disabled={loading}
+          variant="outline"
+          className="w-full h-10 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium
+            hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300
+            disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />
+              Fetching...
+            </>
+          ) : (
+            <>
+              <Navigation className="w-3.5 h-3.5 mr-2" />
+              Refresh Location
+            </>
+          )}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
