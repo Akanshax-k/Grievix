@@ -153,6 +153,21 @@ export default function MainForm() {
         formData.append("adress", address.trim());
       }
 
+        // Send image verification metadata so backend/admin can see trust info
+      if (imageVerification) {
+        formData.append("imageVerification", JSON.stringify({
+          trustLevel: imageVerification.trustLevel,
+          hasExif: imageVerification.hasExif,
+          hasGps: imageVerification.hasGps,
+          locationSource: locationSource,
+          hasTimestamp: imageVerification.hasTimestamp,
+          takenAt: imageVerification.takenAt?.toISOString() ?? null,
+          cameraMake: imageVerification.cameraMake,
+          cameraModel: imageVerification.cameraModel,
+          warnings: imageVerification.warnings,
+        }));
+      }
+
       const res = await createComplaint(formData).unwrap();
       dispatch(setLastCreated(res.data));
       setSuccess(true);

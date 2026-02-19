@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { ImageVerificationData } from "../slices/complaintSlice";
 
 export const complaintApi = createApi({
   reducerPath: "complaintApi",
@@ -37,6 +38,7 @@ export const complaintApi = createApi({
           createdAt: string;
           updatedAt: string;
           resolvedAt: string | null;
+           imageVerification?: ImageVerificationData | null;  // ← ADD to each
         };
       },
       FormData
@@ -70,6 +72,7 @@ export const complaintApi = createApi({
             createdAt: string;
             updatedAt: string;
             resolvedAt: string | null;
+             imageVerification?: ImageVerificationData | null;  // ← ADD to each
           }>;
           pagination: {
             page: number;
@@ -105,6 +108,7 @@ export const complaintApi = createApi({
           createdAt: string;
           updatedAt: string;
           resolvedAt: string | null;
+           imageVerification?: ImageVerificationData | null;  // ← ADD to each
         };
       },
       string

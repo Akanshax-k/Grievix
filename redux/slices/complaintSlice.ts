@@ -1,5 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface ImageVerificationData {
+  trustLevel: "high" | "medium" | "low";
+  hasExif: boolean;
+  hasGps: boolean;
+  locationSource: "exif" | "gps" | "manual";
+  hasTimestamp: boolean;
+  takenAt: string | null;
+  cameraMake: string | null;
+  cameraModel: string | null;
+  warnings: string[];
+}
 export interface ComplaintResult {
   _id: string;
   userId: string;
@@ -17,6 +28,17 @@ export interface ComplaintResult {
   createdAt: string;
   updatedAt: string;
   resolvedAt: string | null;
+    imageVerification?: {
+    trustLevel: "high" | "medium" | "low";
+    hasExif: boolean;
+    hasGps: boolean;
+    locationSource: "exif" | "gps" | "manual";
+    hasTimestamp: boolean;
+    takenAt: string | null;
+    cameraMake: string | null;
+    cameraModel: string | null;
+    warnings: string[];
+  } | null;
 }
 
 interface ComplaintState {
