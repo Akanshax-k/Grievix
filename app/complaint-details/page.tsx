@@ -6,11 +6,14 @@ import { useGetComplaintByIdQuery } from "@/redux/api/complaintApi";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import Navbar from "@/components/ui/navbar";
-import { Separator } from "@/components/ui/separator";
-import { Loader2, MapPin, ArrowLeft } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { STATUS_CONFIG, STATUS_FALLBACK, SEVERITY_COLORS } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
+import {
+  STATUS_CONFIG,
+  STATUS_FALLBACK,
+  SEVERITY_COLORS,
+} from "@/lib/constants";
 import ImageVerificationCard from "@/components/complaint-details/ImageVerificationCard";
 import AIAnalysisCard from "@/components/complaint-details/AIAnalysisCard";
 
@@ -27,10 +30,15 @@ function ComplaintDetailsContent() {
 
   if (!id) {
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-400">No complaint ID provided.</p>
-        <Link href="/complaint" className="text-blue-600 text-sm mt-2 inline-block hover:underline">
-          ← Back to complaints
+      <div className="py-24 text-center">
+        <p className="text-muted-foreground text-sm">
+          No complaint ID provided.
+        </p>
+        <Link
+          href="/complaint"
+          className="text-sm mt-3 inline-block text-foreground underline underline-offset-4 hover:opacity-70"
+        >
+          Back to complaints
         </Link>
       </div>
     );
@@ -38,159 +46,145 @@ function ComplaintDetailsContent() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+      <div className="flex justify-center py-24">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (isError || !complaint) {
     return (
-      <div className="text-center py-20">
-        <p className="text-red-500 text-sm">Failed to load complaint details.</p>
-        <Link href="/complaint" className="text-blue-600 text-sm mt-2 inline-block hover:underline">
-          ← Back to complaints
+      <div className="py-24 text-center">
+        <p className="text-sm text-destructive">
+          Failed to load complaint details.
+        </p>
+        <Link
+          href="/complaint"
+          className="text-sm mt-3 inline-block text-foreground underline underline-offset-4 hover:opacity-70"
+        >
+          Back to complaints
         </Link>
       </div>
     );
   }
 
-  const formattedDate = new Date(complaint.createdAt).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const formattedDate = new Date(complaint.createdAt).toLocaleDateString(
+    "en-US",
+    { month: "short", day: "numeric", year: "numeric" }
+  );
 
   const statusStyle = STATUS_CONFIG[complaint.status] ?? STATUS_FALLBACK;
 
+  const lat = complaint.location.coordinates[1];
+  const lng = complaint.location.coordinates[0];
+
   return (
     <>
-      {/* Back link + Title */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/complaint"
-          className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 text-gray-600" />
-        </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          Complaint Details
-        </h1>
+      {/* Back link — subtle, editorial */}
+      <Link
+        href="/complaint"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Back to complaints
+      </Link>
+
+      {/* Evidence image — hero, full-width */}
+      <div className="rounded-lg overflow-hidden mb-8 bg-muted">
+        <img
+          src={complaint.imageUrl}
+          alt="Complaint evidence"
+          className="w-full aspect-[16/9] object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src =
+              "https://placehold.co/800x450/e5e5e5/a3a3a3?text=No+Image";
+          }}
+        />
       </div>
 
-      {/* Image + Info Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-        {/* Image */}
-        <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-          <img
-            src={complaint.imageUrl}
-            alt="Complaint evidence"
-            className="w-full h-64 md:h-80 object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                "https://placehold.co/600x400/e2e8f0/94a3b8?text=No+Image";
-            }}
+      {/* Header row — badges left, status right */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="font-normal text-xs">
+            {complaint.category}
+          </Badge>
+          <Badge
+            className={`text-xs font-normal border ${
+              SEVERITY_COLORS[complaint.severity] ??
+              "text-muted-foreground bg-muted"
+            }`}
+          >
+            {complaint.severity}
+          </Badge>
+        </div>
+
+        {/* Status indicator with dot */}
+        <div
+          className={`inline-flex items-center gap-2 text-sm font-medium px-3 py-1 rounded-full shrink-0 ${statusStyle.bg} ${statusStyle.text}`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}
           />
+          {complaint.status}
         </div>
+      </div>
 
-        {/* Details */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-              {complaint.category}
-            </span>
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${SEVERITY_COLORS[complaint.severity] ?? "text-gray-600 bg-gray-50"}`}>
-              {complaint.severity} Severity
-            </span>
-          </div>
+      {/* Description */}
+      <p className="text-base leading-relaxed text-foreground mb-3">
+        {complaint.description || "No description provided."}
+      </p>
 
-          <p className="text-sm text-gray-600 leading-relaxed">
-            {complaint.description || "No description provided."}
+      {/* Meta line — date · department · resolved */}
+      <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground mb-10">
+        <span>Submitted {formattedDate}</span>
+        {complaint.department && (
+          <>
+            <span className="text-border">·</span>
+            <span>{complaint.department}</span>
+          </>
+        )}
+        {complaint.resolvedAt && (
+          <>
+            <span className="text-border">·</span>
+            <span>
+              Resolved{" "}
+              {new Date(complaint.resolvedAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Location — clean, no card wrapping */}
+      <div className="border-t border-border pt-8 mb-10">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">
+          Location
+        </h2>
+        <p className="text-sm text-foreground">
+          {lat.toFixed(4)}° N, {lng.toFixed(4)}° E
+        </p>
+        {complaint.location.address && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {complaint.location.address}
           </p>
+        )}
+      </div>
 
-          <div className="text-xs text-gray-400">
-            Submitted on {formattedDate}
-          </div>
+      {/* Verification + AI Analysis — side-by-side grid */}
+      {(complaint.imageVerification || complaint.aiAnalysis) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+          {complaint.imageVerification && (
+            <ImageVerificationCard
+              verification={complaint.imageVerification}
+            />
+          )}
+          {complaint.aiAnalysis && (
+            <AIAnalysisCard aiAnalysis={complaint.aiAnalysis} />
+          )}
         </div>
-      </section>
-
-      <Separator className="bg-gray-200 my-6" />
-
-      {/* Location + Status */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-bold text-gray-800">Incident Location</h2>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          {/* Coordinates */}
-          <div className="flex flex-col gap-3">
-            <Card className="rounded-xl border-0 shadow-sm bg-gray-50 min-w-[160px]">
-              <CardContent className="px-4 py-3 flex flex-col gap-0.5">
-                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                  Latitude
-                </span>
-                <span className="text-sm font-semibold text-gray-800">
-                  {complaint.location.coordinates[1].toFixed(4)}°
-                </span>
-              </CardContent>
-            </Card>
-            <Card className="rounded-xl border-0 shadow-sm bg-gray-50 min-w-[160px]">
-              <CardContent className="px-4 py-3 flex flex-col gap-0.5">
-                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                  Longitude
-                </span>
-                <span className="text-sm font-semibold text-gray-800">
-                  {complaint.location.coordinates[0].toFixed(4)}°
-                </span>
-              </CardContent>
-            </Card>
-            {complaint.location.address && (
-              <Card className="rounded-xl border-0 shadow-sm bg-gray-50 min-w-[160px]">
-                <CardContent className="px-4 py-3 flex flex-col gap-0.5">
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                    Address
-                  </span>
-                  <span className="text-sm font-semibold text-gray-800">
-                    {complaint.location.address}
-                  </span>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Status */}
-          <Card className="rounded-xl border shadow-sm w-full sm:w-auto sm:min-w-[200px]">
-            <CardContent className="p-5 flex flex-col items-end gap-1">
-              <span className="text-sm font-semibold text-gray-700">Current Status:</span>
-              <span className={`text-base font-bold px-3 py-1 rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
-                {complaint.status}
-              </span>
-              {complaint.resolvedAt && (
-                <span className="text-xs text-gray-400 mt-1">
-                  Resolved: {new Date(complaint.resolvedAt).toLocaleDateString()}
-                </span>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Image Verification Section */}
-      {complaint.imageVerification && (
-        <>
-          <Separator className="bg-gray-200 my-6" />
-          <ImageVerificationCard verification={complaint.imageVerification} />
-        </>
-      )}
-
-      {/* AI Analysis Section */}
-      {complaint.aiAnalysis && (
-        <>
-          <Separator className="bg-gray-200 my-6" />
-          <AIAnalysisCard aiAnalysis={complaint.aiAnalysis} />
-        </>
       )}
     </>
   );
@@ -198,13 +192,13 @@ function ComplaintDetailsContent() {
 
 export default function ComplaintDetailsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="max-w-5xl mx-auto px-4 sm:px-8 py-8 flex flex-col gap-8">
+      <main className="max-w-3xl mx-auto px-6 sm:px-8 py-10">
         <Suspense
           fallback={
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            <div className="flex justify-center py-24">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
           }
         >

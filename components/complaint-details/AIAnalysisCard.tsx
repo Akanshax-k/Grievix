@@ -1,5 +1,4 @@
-import { Brain, Tag, TrendingUp } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Tag, TrendingUp } from "lucide-react";
 
 interface AIAnalysisCardProps {
   aiAnalysis: {
@@ -11,76 +10,65 @@ interface AIAnalysisCardProps {
 export default function AIAnalysisCard({ aiAnalysis }: AIAnalysisCardProps) {
   const { confidenceScore, imageLabels } = aiAnalysis;
 
-  // Determine confidence level and color
-  const getConfidenceLevel = (score: number) => {
-    if (score >= 80) return { level: "High", color: "text-emerald-700 bg-emerald-50 border-emerald-200" };
-    if (score >= 60) return { level: "Medium", color: "text-amber-700 bg-amber-50 border-amber-200" };
-    return { level: "Low", color: "text-red-700 bg-red-50 border-red-200" };
-  };
-
-  const confidenceInfo = getConfidenceLevel(confidenceScore);
+  const confidence =
+    confidenceScore >= 80
+      ? { level: "High", bar: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" }
+      : confidenceScore >= 60
+      ? { level: "Medium", bar: "bg-amber-500", text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" }
+      : { level: "Low", bar: "bg-red-500", text: "text-red-700", bg: "bg-red-50", border: "border-red-200" };
 
   return (
-    <Card className="border-gray-200 shadow-sm">
-      <CardContent className="p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Brain className="w-5 h-5 text-purple-600" />
-          <h3 className="text-lg font-bold text-gray-800">AI Analysis</h3>
+    <div className="rounded-lg border border-border p-5">
+      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-4">
+        AI Analysis
+      </h3>
+
+      {/* Confidence score */}
+      <div className="mb-4">
+        <div className="flex items-baseline justify-between mb-2">
+          <span className="text-sm text-muted-foreground">Confidence</span>
+          <span className="text-2xl font-semibold text-foreground tabular-nums">
+            {confidenceScore}%
+          </span>
         </div>
 
-        {/* Confidence Score */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Confidence Score</span>
-            <span className="text-2xl font-bold text-gray-900">{confidenceScore}%</span>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className={`h-2.5 rounded-full transition-all ${
-                confidenceScore >= 80
-                  ? "bg-emerald-500"
-                  : confidenceScore >= 60
-                  ? "bg-amber-500"
-                  : "bg-red-500"
-              }`}
-              style={{ width: `${confidenceScore}%` }}
-            ></div>
-          </div>
-
-          {/* Confidence Badge */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${confidenceInfo.color}`}>
-            <TrendingUp className="w-4 h-4" />
-            {confidenceInfo.level} Confidence
-          </div>
+        {/* Progress bar */}
+        <div className="w-full bg-muted rounded-full h-1.5 mb-2">
+          <div
+            className={`h-1.5 rounded-full transition-all ${confidence.bar}`}
+            style={{ width: `${confidenceScore}%` }}
+          />
         </div>
 
-        {/* Image Labels */}
-        {imageLabels && imageLabels.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Tag className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">Detected Labels</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {imageLabels.map((label, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-full text-xs font-medium text-purple-700"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        <div
+          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium border ${confidence.bg} ${confidence.text} ${confidence.border}`}
+        >
+          <TrendingUp className="w-3 h-3" />
+          {confidence.level}
+        </div>
+      </div>
 
-        {/* Info Text */}
-        <p className="text-xs text-gray-500 italic">
-          AI-powered image analysis helps categorize and assess complaint severity automatically.
-        </p>
-      </CardContent>
-    </Card>
+      {/* Labels */}
+      {imageLabels?.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Tag className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
+              Detected Labels
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {imageLabels.map((label, index) => (
+              <span
+                key={index}
+                className="px-2 py-0.5 bg-muted rounded text-xs text-foreground"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

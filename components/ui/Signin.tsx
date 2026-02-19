@@ -111,7 +111,7 @@ const Login = () => {
             </p>
           </div>
           <p className="text-[14px] -translate-y-2.5 font-quicksand text-[#4A4A4A]">
-            Username - <span className="font-semibold text-[#4A4A4A]">Kunal Patel</span>
+            Username - <span className="font-semibold text-[#4A4A4A]">Kunal</span>
           </p>
           <p className="text-[14px] font-quicksand -translate-y-4 text-[#4A4A4A]">
             Password - <span className="font-semibold text-[#4A4A4A]">Kunal@987</span>
