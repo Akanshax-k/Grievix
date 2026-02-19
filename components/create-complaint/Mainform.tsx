@@ -153,7 +153,7 @@ export default function MainForm() {
         formData.append("adress", address.trim());
       }
 
-        // Send image verification metadata so backend/admin can see trust info
+      // Send image verification metadata so backend/admin can see trust info
       if (imageVerification) {
         formData.append("imageVerification", JSON.stringify({
           trustLevel: imageVerification.trustLevel,
@@ -164,6 +164,7 @@ export default function MainForm() {
           takenAt: imageVerification.takenAt?.toISOString() ?? null,
           cameraMake: imageVerification.cameraMake,
           cameraModel: imageVerification.cameraModel,
+          isFreshCapture: imageVerification.isFreshCapture,
           warnings: imageVerification.warnings,
         }));
       }

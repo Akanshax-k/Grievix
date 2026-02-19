@@ -65,12 +65,16 @@ export default function UploadSection({
         medium: {
           icon: ShieldAlert,
           color: "text-amber-700 bg-amber-50 border-amber-200",
-          label: "Medium Trust — Some metadata missing",
+          label: verification.isFreshCapture
+            ? "Medium Trust — Fresh capture, limited metadata"
+            : "Medium Trust — Some metadata missing",
         },
         low: {
           icon: ShieldX,
           color: "text-red-700 bg-red-50 border-red-200",
-          label: "Low Trust — Likely not an original photo",
+          label: verification.warnings.some(w => /WhatsApp|Telegram|Signal|Messenger|Instagram/i.test(w))
+            ? "Low Trust — Shared via messaging app (metadata stripped)"
+            : "Low Trust — Likely not an original photo",
         },
       }[verification.trustLevel]
     : null;
@@ -188,11 +192,25 @@ export default function UploadSection({
 
             {/* Metadata pills */}
             <div className="flex flex-wrap gap-2">
+              {verification.isFreshCapture && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-100 rounded-md text-xs text-emerald-700 font-medium">
+                  <Camera className="w-3 h-3" />
+                  Fresh Capture
+                </span>
+              )}
               {verification.hasGps && verification.gps && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-100 rounded-md text-xs text-gray-600">
                   <MapPin className="w-3 h-3 text-emerald-500" />
                   {verification.gps.lat.toFixed(4)},{" "}
                   {verification.gps.lng.toFixed(4)}
+                  {verification.locationSource === "gps" && " (GPS)"}
+                  {verification.locationSource === "exif" && " (EXIF)"}
+                </span>
+              )}
+              {!verification.hasGps && verification.locationSource === "manual" && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-100 rounded-md text-xs text-blue-700">
+                  <MapPin className="w-3 h-3" />
+                  Manual Location
                 </span>
               )}
               {verification.hasTimestamp && verification.takenAt && (
