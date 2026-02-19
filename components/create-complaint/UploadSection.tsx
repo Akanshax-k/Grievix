@@ -1,144 +1,248 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageIcon, Upload, X, ZoomIn } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
+import {
+  ImagePlus,
+  X,
+  ZoomIn,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldX,
+  Loader2,
+  Camera,
+  Clock,
+  MapPin,
+  AlertTriangle,
+} from "lucide-react";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import type { ImageVerification } from "@/lib/imageVerification";
 
 interface UploadSectionProps {
-  images: File[];
-  onImagesChange: (images: File[]) => void;
+  image: File | null;
+  onImageChange: (file: File | null) => void;
+  verification: ImageVerification | null;
+  verifying: boolean;
 }
 
-export default function UploadSection({ images, onImagesChange }: UploadSectionProps) {
+export default function UploadSection({
+  image,
+  onImageChange,
+  verification,
+  verifying,
+}: UploadSectionProps) {
+  const [dragging, setDragging] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
 
-  const handleFiles = (files: FileList | null) => {
-    if (!files) return;
-    const valid = Array.from(files).filter(
-      (f) => (f.type === "image/jpeg" || f.type === "image/png") && f.size <= 5 * 1024 * 1024
-    );
-    onImagesChange([...images, ...valid].slice(0, 4));
+  const previewUrl = useMemo(
+    () => (image ? URL.createObjectURL(image) : null),
+    [image]
+  );
+
+  const handleFile = (files: FileList) => {
+    const file = Array.from(files).find((f) => f.type.startsWith("image/"));
+    if (file) onImageChange(file);
   };
 
-  const removeImage = (index: number) => {
-    const updated = [...images];
-    updated.splice(index, 1);
-    onImagesChange(updated);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files);
   };
 
-  const previews = images.map((f) => URL.createObjectURL(f));
+  const trustBadge = verification
+    ? {
+        high: {
+          icon: ShieldCheck,
+          color: "text-emerald-700 bg-emerald-50 border-emerald-200",
+          label: "High Trust — Original geotagged photo",
+        },
+        medium: {
+          icon: ShieldAlert,
+          color: "text-amber-700 bg-amber-50 border-amber-200",
+          label: "Medium Trust — Some metadata missing",
+        },
+        low: {
+          icon: ShieldX,
+          color: "text-red-700 bg-red-50 border-red-200",
+          label: "Low Trust — Likely not an original photo",
+        },
+      }[verification.trustLevel]
+    : null;
 
   return (
     <>
-      <Card className="rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col">
-        <CardHeader className="pb-1 pt-5 px-5">
-          <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-blue-600" />
-            Evidence Gallery
-          </CardTitle>
-          <p className="text-xs text-slate-400 mt-0.5">Upload clear photos of the issue</p>
-        </CardHeader>
+      <div className="space-y-4">
+        <div className="text-center">
+          <p className="text-sm text-gray-500">
+            Take or upload a clear photo of the issue. We&apos;ll extract
+            location data from the photo if available.
+          </p>
+        </div>
 
-        <CardContent className="px-5 pb-5 flex flex-col flex-1 space-y-3">
-          {/* Drop Zone */}
+        {/* Upload area */}
+        {!image ? (
           <div
-            onClick={() => inputRef.current?.click()}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragOver(false);
-              handleFiles(e.dataTransfer.files);
-            }}
+            onDrop={handleDrop}
             onDragOver={(e) => {
               e.preventDefault();
-              setDragOver(true);
+              setDragging(true);
             }}
-            onDragLeave={() => setDragOver(false)}
-            className={`flex-1 min-h-[160px] border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300
-              ${dragOver
-                ? "border-blue-400 bg-blue-50"
-                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50"
-              }`}
+            onDragLeave={() => setDragging(false)}
+            onClick={() => inputRef.current?.click()}
+            className={`
+              border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 py-14 cursor-pointer transition-all duration-200
+              ${
+                dragging
+                  ? "border-blue-400 bg-blue-50/60"
+                  : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+              }
+            `}
           >
-            {previews.length === 0 ? (
-              <>
-                <Upload className="w-7 h-7 text-slate-400" strokeWidth={1.5} />
-                <div className="text-center">
-                  <p className="text-xs font-medium text-slate-600">
-                    {dragOver ? "Drop images here" : "Drag and drop images here"}
-                  </p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Support for JPG, PNG (Max 5MB)
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="w-full p-2 grid grid-cols-2 gap-2">
-                {previews.map((src, i) => (
-                  <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-slate-100">
-                    <Image
-                      src={src}
-                      alt={`Preview ${i + 1}`}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setLightbox(src); }}
-                        className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center"
-                      >
-                        <ZoomIn className="w-3 h-3 text-slate-700" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); removeImage(i); }}
-                        className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center"
-                      >
-                        <X className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+              <ImagePlus className="w-6 h-6 text-gray-400" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-600">
+                Drag & drop or{" "}
+                <span className="text-blue-600">click to browse</span>
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                JPG, PNG, HEIC — max 10 MB
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* Preview */
+          <div className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+            <div className="aspect-[16/10] relative">
+              <Image
+                src={previewUrl!}
+                alt="Evidence"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => setLightboxUrl(previewUrl)}
+                  className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center hover:scale-105 transition-transform shadow-sm"
+                >
+                  <ZoomIn className="w-4 h-4 text-gray-700" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onImageChange(null)}
+                  className="w-9 h-9 rounded-full bg-red-500/90 flex items-center justify-center hover:scale-105 transition-transform shadow-sm"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            </div>
+            <div className="px-3 py-2 flex items-center justify-between bg-white border-t border-gray-100">
+              <span className="text-xs text-gray-500 truncate max-w-[65%]">
+                {image.name}
+              </span>
+              <span className="text-[11px] text-gray-400">
+                {(image.size / 1024 / 1024).toFixed(1)} MB
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Hidden input */}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files) handleFile(e.target.files);
+            e.target.value = "";
+          }}
+        />
+
+        {/* Verification loading */}
+        {verifying && (
+          <div className="flex items-center justify-center gap-2 py-3 text-sm text-gray-500">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Analyzing image metadata…
+          </div>
+        )}
+
+        {/* Verification results */}
+        {verification && !verifying && trustBadge && (
+          <div className="space-y-3">
+            <div
+              className={`flex items-center gap-2.5 p-3 rounded-lg border text-sm font-medium ${trustBadge.color}`}
+            >
+              <trustBadge.icon className="w-4 h-4 shrink-0" />
+              {trustBadge.label}
+            </div>
+
+            {/* Metadata pills */}
+            <div className="flex flex-wrap gap-2">
+              {verification.hasGps && verification.gps && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-100 rounded-md text-xs text-gray-600">
+                  <MapPin className="w-3 h-3 text-emerald-500" />
+                  {verification.gps.lat.toFixed(4)},{" "}
+                  {verification.gps.lng.toFixed(4)}
+                </span>
+              )}
+              {verification.hasTimestamp && verification.takenAt && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-100 rounded-md text-xs text-gray-600">
+                  <Clock className="w-3 h-3 text-blue-500" />
+                  {new Date(verification.takenAt).toLocaleString()}
+                </span>
+              )}
+              {verification.cameraMake && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-100 rounded-md text-xs text-gray-600">
+                  <Camera className="w-3 h-3 text-violet-500" />
+                  {verification.cameraMake}{" "}
+                  {verification.cameraModel ?? ""}
+                </span>
+              )}
+            </div>
+
+            {/* Warnings */}
+            {verification.warnings.length > 0 && (
+              <div className="space-y-1.5">
+                {verification.warnings.map((w, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 p-2.5 rounded-md"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    {w}
                   </div>
                 ))}
-                {previews.length < 4 && (
-                  <div className="aspect-square rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center">
-                    <Upload className="w-5 h-5 text-slate-300" />
-                  </div>
-                )}
               </div>
             )}
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/jpeg,image/png"
-              multiple
-              className="hidden"
-              onChange={(e) => handleFiles(e.target.files)}
-            />
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setLightbox(null)}
-        >
-          <div className="relative max-w-2xl w-full aspect-square rounded-2xl overflow-hidden">
-            <Image src={lightbox} alt="Preview" fill className="object-contain" />
-          </div>
-          <button
-            type="button"
-            onClick={() => setLightbox(null)}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-        </div>
-      )}
+      <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
+        <DialogContent className="max-w-xl p-2">
+          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          {lightboxUrl && (
+            <Image
+              src={lightboxUrl}
+              alt="preview"
+              width={800}
+              height={600}
+              className="rounded-lg object-contain w-full"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

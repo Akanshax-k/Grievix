@@ -1,32 +1,28 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { STATUS_CONFIG, STATUS_FALLBACK } from "@/lib/constants";
+
 type Complaint = {
-  id: string;
+  _id: string;
+  description: string;
+  imageUrl: string;
+  category: string;
   department: string;
   status: string;
-  description: string;
-  date: string;
-  image: string;
-};
-
-const statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
-  Pending: {
-    bg: "bg-amber-50 border border-amber-200",
-    text: "text-amber-700",
-    dot: "bg-amber-400",
-  },
-  "In Progress": {
-    bg: "bg-blue-50 border border-blue-200",
-    text: "text-blue-700",
-    dot: "bg-blue-400",
-  },
-  Resolved: {
-    bg: "bg-emerald-50 border border-emerald-200",
-    text: "text-emerald-700",
-    dot: "bg-emerald-400",
-  },
+  severity: string;
+  createdAt: string;
 };
 
 export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
-  const s = statusConfig[complaint.status];
+  const router = useRouter();
+  const s = STATUS_CONFIG[complaint.status] ?? STATUS_FALLBACK;
+
+  const formattedDate = new Date(complaint.createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
     <div
@@ -36,7 +32,7 @@ export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
       {/* Thumbnail */}
       <div className="flex-shrink-0">
         <img
-          src={complaint.image}
+          src={complaint.imageUrl}
           alt=""
           className="object-cover rounded-lg"
           style={{
@@ -56,10 +52,10 @@ export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
         <div className="flex items-start justify-between" style={{ gap: "1vw", marginBottom: "0.5vh" }}>
           <div>
             <span className="text-gray-400 font-medium" style={{ fontSize: "clamp(9px,0.85vw,11px)" }}>
-              REF ID:
+              REF ID:{" "}
             </span>
             <span className="font-bold text-gray-800" style={{ fontSize: "clamp(9px,0.85vw,11px)" }}>
-              {complaint.id}
+              {complaint._id.slice(-8).toUpperCase()}
             </span>
           </div>
 
@@ -85,16 +81,17 @@ export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
           className="text-gray-600 leading-relaxed line-clamp-2"
           style={{ fontSize: "clamp(9px,0.85vw,11px)", marginBottom: "1.2vh" }}
         >
-          {complaint.description}
+          {complaint.description || complaint.category}
         </p>
 
         {/* Footer */}
         <div className="flex items-center justify-between flex-wrap" style={{ gap: "1vh" }}>
           <span className="text-gray-400" style={{ fontSize: "clamp(9px,0.8vw,10px)" }}>
-            Submitted on {complaint.date}
+            Submitted on {formattedDate}
           </span>
 
           <button
+            onClick={() => router.push(`/complaint-details?id=${complaint._id}`)}
             className="text-blue-600 font-medium hover:text-blue-700 flex items-center"
             style={{ fontSize: "clamp(9px,0.85vw,11px)", gap: "0.3vw" }}
           >

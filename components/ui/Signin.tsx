@@ -1,38 +1,43 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "./button";
-import { useLoginMutation } from "@/redux/api/authSlice"; // 👈 apne authApi ka sahi path yaha lagana
+import { useLoginMutation } from "@/redux/api/authSlice";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/redux/slices/userSlice";
 
 
 const Login = () => {
-  // ✅ local state (UI change nahi kiya)
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const dispatch = useDispatch();
 
-
-  // ✅ RTK Query login mutation
   const [login, { isLoading }] = useLoginMutation();
 
- 
-
   const handleLogin = async () => {
-  try {
-    const res = await login({
-      username,
-      password,
-    }).unwrap();
+    setError(null);
+    try {
+      const res = await login({
+        username,
+        password,
+      }).unwrap();
 
-    console.log("Login Success:", res);
+      // Store user + token in Redux and localStorage
+      dispatch(
+        setCredentials({
+          user: res.data.user,
+          token: res.data.token,
+        })
+      );
 
-    // ✅ next page pe redirect
-    router.push("/create-complaint"); // yaha apna page route likho
-
-  } catch (err) {
-    console.log("Login Failed:", err);
-  }
-};
+      router.push("/complaint");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      setError(apiErr?.data?.message || "Login failed. Please check your credentials.");
+    }
+  };
 
 
   return (
@@ -91,6 +96,9 @@ const Login = () => {
         </div>
 
         {/* Login button */}
+        {error && (
+          <p className="text-red-500 text-sm text-center w-full">{error}</p>
+        )}
         <Button variant="default" onClick={handleLogin} disabled={isLoading}>
           {isLoading ? "Logging in..." : "Log in to Portal →"}
         </Button>

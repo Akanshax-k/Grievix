@@ -1,39 +1,31 @@
 // app/create-complaint/page.tsx
-// Server Component — no "use client"
+"use client";
 
-import type { Metadata } from "next";
-import Header from "@/components/create-complaint/Header";
+import Navbar from "@/components/ui/navbar";
+import Footer from "@/components/ui/footer";
 import MainForm from "@/components/create-complaint/Mainform";
-
-export const metadata: Metadata = {
-  title: "Report New Grievance | Public Grievance Portal",
-  description: "Submit your concern directly to the municipal authorities for rapid resolution.",
-};
 
 export default function CreateComplaintPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#EAEFEF" }}>
-      <Header />
+    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+      <Navbar />
 
-      <main className="max-w-5xl mx-auto px-6 py-10 pb-16">
-        {/* Page Title — exactly like screenshot */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-1">
-            Report New Grievance
-          </h1>
-          <p className="text-slate-500 text-sm">
+      <main className="flex-1 mx-auto w-full max-w-3xl px-4 pt-10 pb-12">
+        {/* Page header — same style as grievance portal */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Report New Grievance</h1>
+          <p className="text-sm text-gray-500 mt-1">
             Submit your concern directly to the municipal authorities for rapid resolution.
           </p>
         </div>
 
-        {/* MainForm: 3-card grid + submit */}
-        <MainForm />
-
-        {/* Footer */}
-        <p className="text-xs text-slate-400 mt-10">
-          © 2026 Public Grievance Portal. All rights reserved.
-        </p>
+        {/* Wizard card */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 sm:p-8">
+          <MainForm />
+        </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

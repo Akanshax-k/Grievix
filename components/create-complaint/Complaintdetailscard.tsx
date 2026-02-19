@@ -1,46 +1,67 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { InfoIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPinned } from "lucide-react";
 
 interface ComplaintDetailsCardProps {
   description: string;
   onDescriptionChange: (val: string) => void;
+  address: string;
+  onAddressChange: (val: string) => void;
 }
 
 export default function ComplaintDetailsCard({
   description,
   onDescriptionChange,
+  address,
+  onAddressChange,
 }: ComplaintDetailsCardProps) {
   return (
-    <Card className="rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col">
-      <CardHeader className="pb-1 pt-5 px-5">
-        <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-          <InfoIcon className="w-4 h-4 text-blue-600" />
-          Complaint Details
-        </CardTitle>
-        <p className="text-xs text-slate-400 mt-0.5">Describe the issue in detail</p>
-      </CardHeader>
+    <div className="space-y-5">
+      <div className="text-center">
+        <p className="text-sm text-gray-500">
+          Provide details about the grievance — the more specific, the faster it
+          gets resolved.
+        </p>
+      </div>
 
-      <CardContent className="px-5 pb-5 flex flex-col flex-1 space-y-3">
-        <div className="flex flex-col flex-1 space-y-2">
-          <p className="text-xs font-medium text-slate-600">Statement of Grievance</p>
-          <div className="relative flex-1">
-            <Textarea
-              placeholder="Please provide specifics: exact landmark, duration of issue, and impact on public health or safety..."
-              value={description}
-              onChange={(e) => onDescriptionChange(e.target.value)}
-              maxLength={500}
-              className="w-full h-full min-h-[160px] rounded-lg border border-slate-200 bg-white text-slate-700 placeholder:text-slate-400 text-xs resize-none
-                focus:ring-1 focus:ring-blue-500 focus:border-blue-500 hover:border-slate-300 transition-all duration-300 pb-6"
-            />
-            <span className="absolute bottom-2.5 right-3 text-[10px] text-slate-400 tabular-nums">
-              {description.length} / 500
-            </span>
-          </div>
+      {/* Description */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-gray-700">
+          Statement of Grievance
+        </label>
+        <div className="relative">
+          <Textarea
+            placeholder="Describe the issue: exact location, how long it's been happening, impact on public health or safety…"
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            maxLength={500}
+            rows={6}
+            className="w-full rounded-lg border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 text-sm resize-none
+              focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 hover:border-gray-300 transition-all duration-200 pb-7 shadow-sm"
+          />
+          <span className="absolute bottom-3 right-3.5 text-[11px] text-gray-400 tabular-nums">
+            {description.length} / 500
+          </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Address */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+          <MapPinned className="w-3.5 h-3.5 text-blue-600" />
+          Address
+          <span className="text-gray-400 font-normal text-xs">(optional)</span>
+        </label>
+        <Input
+          placeholder="e.g. 281/33, Main Road, Sector 5, Near City Mall"
+          value={address}
+          onChange={(e) => onAddressChange(e.target.value)}
+          className="h-10 rounded-lg border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 text-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 hover:border-gray-300 transition-all duration-200 shadow-sm"
+        />
+      </div>
+    </div>
   );
 }

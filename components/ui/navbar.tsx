@@ -1,11 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/userSlice";
+import type { RootState } from "@/redux/store";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const user = useSelector((s: RootState) => s.user.user);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/login");
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
@@ -26,9 +37,9 @@ export default function Navbar() {
         {/* Nav Links */}
         <nav className="flex items-center gap-1">
           <Link
-            href="/grievance/new"
+            href="/create-complaint"
             className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
-              pathname === "/grievance/new"
+              pathname === "/create-complaint"
                 ? "text-blue-600 bg-blue-50"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
@@ -36,20 +47,26 @@ export default function Navbar() {
             New Grievance
           </Link>
           <Link
-            href="/grievance/previous"
+            href="/complaint"
             className={`px-3 py-1.5 text-sm rounded-md font-medium transition-colors ${
-              pathname === "/grievance/previous"
+              pathname === "/complaint"
                 ? "text-blue-600 bg-blue-50"
-                : "text-blue-600 hover:bg-blue-50"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            Previous Grievance
+            My Complaints
           </Link>
         </nav>
 
-        {/* Right — Logout + Avatar */}
+        {/* Right — User info + Logout + Avatar */}
         <div className="flex items-center gap-2">
+          {user && (
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              {user.username}
+            </span>
+          )}
           <button
+            onClick={handleLogout}
             className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             title="Logout"
           >
@@ -57,7 +74,7 @@ export default function Navbar() {
           </button>
           <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
             <img
-              src="https://api.dicebear.com/7.x/thumbs/svg?seed=user"
+              src={`https://api.dicebear.com/7.x/thumbs/svg?seed=${user?.username ?? "user"}`}
               alt="avatar"
               className="w-full h-full object-cover"
             />
