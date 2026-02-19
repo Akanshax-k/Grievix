@@ -11,6 +11,8 @@ import { Loader2, MapPin, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { STATUS_CONFIG, STATUS_FALLBACK, SEVERITY_COLORS } from "@/lib/constants";
+import ImageVerificationCard from "@/components/complaint-details/ImageVerificationCard";
+import AIAnalysisCard from "@/components/complaint-details/AIAnalysisCard";
 
 function ComplaintDetailsContent() {
   const searchParams = useSearchParams();
@@ -174,6 +176,22 @@ function ComplaintDetailsContent() {
           </Card>
         </div>
       </section>
+
+      {/* Image Verification Section */}
+      {complaint.imageVerification && (
+        <>
+          <Separator className="bg-gray-200 my-6" />
+          <ImageVerificationCard verification={complaint.imageVerification} />
+        </>
+      )}
+
+      {/* AI Analysis Section */}
+      {complaint.aiAnalysis && (
+        <>
+          <Separator className="bg-gray-200 my-6" />
+          <AIAnalysisCard aiAnalysis={complaint.aiAnalysis} />
+        </>
+      )}
     </>
   );
 }

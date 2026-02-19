@@ -69,6 +69,10 @@ export const complaintApi = createApi({
             severity?: string;
             department?: string;
             status: string;
+            aiAnalysis?: {
+              confidenceScore: number;
+              imageLabels: string[];
+            };
             createdAt: string;
             updatedAt: string;
             resolvedAt: string | null;
@@ -105,6 +109,10 @@ export const complaintApi = createApi({
           severity: string;
           department: string;
           status: string;
+          aiAnalysis?: {
+            confidenceScore: number;
+            imageLabels: string[];
+          };
           createdAt: string;
           updatedAt: string;
           resolvedAt: string | null;

@@ -25,20 +25,14 @@ export interface ComplaintResult {
   severity: string;
   department: string;
   status: string;
+  aiAnalysis?: {
+    confidenceScore: number;
+    imageLabels: string[];
+  };
   createdAt: string;
   updatedAt: string;
   resolvedAt: string | null;
-    imageVerification?: {
-    trustLevel: "high" | "medium" | "low";
-    hasExif: boolean;
-    hasGps: boolean;
-    locationSource: "exif" | "gps" | "manual";
-    hasTimestamp: boolean;
-    takenAt: string | null;
-    cameraMake: string | null;
-    cameraModel: string | null;
-    warnings: string[];
-  } | null;
+  imageVerification?: ImageVerificationData | null;
 }
 
 interface ComplaintState {

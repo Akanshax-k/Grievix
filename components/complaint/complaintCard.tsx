@@ -2,6 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { STATUS_CONFIG, STATUS_FALLBACK } from "@/lib/constants";
+import { ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
+
+type ImageVerificationData = {
+  trustLevel: "high" | "medium" | "low";
+  hasExif: boolean;
+  hasGps: boolean;
+  locationSource: "exif" | "gps" | "manual";
+  hasTimestamp: boolean;
+  takenAt: string | null;
+  cameraMake: string | null;
+  cameraModel: string | null;
+  warnings: string[];
+};
 
 type Complaint = {
   _id: string;
@@ -12,6 +25,7 @@ type Complaint = {
   status: string;
   severity: string;
   createdAt: string;
+  imageVerification?: ImageVerificationData | null;
 };
 
 export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
@@ -24,13 +38,21 @@ export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
     year: "numeric",
   });
 
+  const trustBadge = complaint.imageVerification
+    ? {
+        high: { icon: ShieldCheck, color: "text-emerald-600", label: "High Trust" },
+        medium: { icon: ShieldAlert, color: "text-amber-600", label: "Medium Trust" },
+        low: { icon: ShieldX, color: "text-red-600", label: "Low Trust" },
+      }[complaint.imageVerification.trustLevel]
+    : null;
+
   return (
     <div
       className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex"
       style={{ gap: "2vw", padding: "2vw" }}
     >
       {/* Thumbnail */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 relative">
         <img
           src={complaint.imageUrl}
           alt=""
@@ -44,6 +66,11 @@ export default function ComplaintCard({ complaint }: { complaint: Complaint }) {
               "https://placehold.co/100x76/e2e8f0/94a3b8?text=IMG";
           }}
         />
+        {trustBadge && (
+          <div className={`absolute -top-1 -right-1 ${trustBadge.color}`} title={trustBadge.label}>
+            <trustBadge.icon className="w-4 h-4 drop-shadow-sm" />
+          </div>
+        )}
       </div>
 
       {/* Body */}
